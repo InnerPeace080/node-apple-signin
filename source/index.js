@@ -103,7 +103,7 @@ const getApplePublicKey = async (kid) => {
 };
 
 const verifyIdToken = async (idToken, clientID) => {
-  const unverifiedPayload = jwt.decode(jwtString, { complete: true });
+  const unverifiedPayload = jwt.decode(idToken, { complete: true });
   const kid = unverifiedPayload.header.kid;
   const applePublicKey = await getApplePublicKey(kid);
   const jwtClaims = jwt.verify(idToken, applePublicKey, { algorithms: 'RS256' });
