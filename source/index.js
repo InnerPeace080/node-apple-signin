@@ -9,8 +9,8 @@ const DEFAULT_SCOPE = 'email';
 const TOKEN_ISSUER = 'https://appleid.apple.com';
 
 const getAuthorizationUrl = (options = {}) => {
-  if (!options.clientID) throw Error('clientID is empty');
-  if (!options.redirectUri) throw Error('redirectUri is empty');
+  if (!options.clientID) {throw Error('clientID is empty');}
+  if (!options.redirectUri) {throw Error('redirectUri is empty');}
 
   const url = new URL(ENDPOINT_URL);
   url.pathname = '/auth/authorize';
@@ -29,12 +29,12 @@ const getAuthorizationUrl = (options = {}) => {
   return url.toString();
 };
 
-const getClientSecret = options => {
-  if (!options.clientID) throw new Error('clientID is empty');
-  if (!options.teamId) throw new Error('teamId is empty');
-  if (!options.keyIdentifier) throw new Error('keyIdentifier is empty');
-  if (!options.privateKeyPath) throw new Error('privateKeyPath is empty');
-  if (!fs.existsSync(options.privateKeyPath)) throw new Error("Can't find private key");
+const getClientSecret = (options) => {
+  if (!options.clientID) {throw new Error('clientID is empty');}
+  if (!options.teamId) {throw new Error('teamId is empty');}
+  if (!options.keyIdentifier) {throw new Error('keyIdentifier is empty');}
+  if (!options.privateKeyPath) {throw new Error('privateKeyPath is empty');}
+  if (!fs.existsSync(options.privateKeyPath)) {throw new Error('Can\'t find private key');}
 
   const timeNow = Math.floor(Date.now() / 1000);
 
@@ -53,9 +53,9 @@ const getClientSecret = options => {
 };
 
 const getAuthorizationToken = async (code, options) => {
-  if (!options.clientID) throw new Error('clientID is empty');
-  if (!options.redirectUri) throw new Error('redirectUri is empty');
-  if (!options.clientSecret) throw new Error('clientSecret is empty');
+  if (!options.clientID) {throw new Error('clientID is empty');}
+  if (!options.redirectUri) {throw new Error('redirectUri is empty');}
+  if (!options.clientSecret) {throw new Error('clientSecret is empty');}
 
   const url = new URL(ENDPOINT_URL);
   url.pathname = '/auth/token';
@@ -73,8 +73,8 @@ const getAuthorizationToken = async (code, options) => {
 };
 
 const refreshAuthorizationToken = async (refreshToken, options) => {
-  if (!options.clientID) throw new Error('clientID is empty');
-  if (!options.clientSecret) throw new Error('clientSecret is empty');
+  if (!options.clientID) {throw new Error('clientID is empty');}
+  if (!options.clientSecret) {throw new Error('clientSecret is empty');}
 
   const url = new URL(ENDPOINT_URL);
   url.pathname = '/auth/token';
@@ -108,9 +108,17 @@ const verifyIdToken = async (idToken, clientID) => {
   const applePublicKey = await getApplePublicKey(kid);
   const jwtClaims = jwt.verify(idToken, applePublicKey, { algorithms: 'RS256' });
 
-  if (jwtClaims.iss !== TOKEN_ISSUER) throw new Error('id token not issued by correct OpenID provider - expected: ' + TOKEN_ISSUER + ' | from: ' + jwtClaims.iss);
-  if (clientID !== undefined && jwtClaims.aud !== clientID) throw new Error('aud parameter does not include this client - is: ' + jwtClaims.aud + '| expected: ' + clientID);
-  if (jwtClaims.exp < (Date.now() / 1000)) throw new Error('id token has expired');
+  if (jwtClaims.iss !== TOKEN_ISSUER) {throw new Error('id token not issued by correct OpenID provider - expected: ' + TOKEN_ISSUER + ' | from: ' + jwtClaims.iss);}
+  if (clientID !== undefined ){
+    if(Array.isArray(clientID)){
+      if(!clientID.includes(jwtClaims.aud)){
+        throw new Error('aud parameter does not include this client - is: ' + jwtClaims.aud + '| expected: ' + clientID);
+      }
+    }else if(jwtClaims.aud !== clientID){
+      throw new Error('aud parameter does not include this client - is: ' + jwtClaims.aud + '| expected: ' + clientID);
+    }
+  }
+  if (jwtClaims.exp < (Date.now() / 1000)) {throw new Error('id token has expired');}
 
   return jwtClaims;
 };
